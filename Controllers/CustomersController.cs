@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Onboarding.Dto;
 using Onboarding.Models;
 
 namespace Onboarding.Controllers
@@ -33,7 +34,7 @@ namespace Onboarding.Controllers
 
         // GET: api/Customers/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Customer>> GetCustomer(int id)
+        public async Task<ActionResult<CustomerDto>> GetCustomer(int id)
         {
           if (_context.Customers == null)
           {
@@ -46,7 +47,11 @@ namespace Onboarding.Controllers
                 return NotFound();
             }
 
-            return customer;
+            return new CustomerDto {
+                Id = customer.Id,
+                Name = customer.Name,
+                Address = customer.Address
+            };
         }
 
         // PUT: api/Customers/5
@@ -83,7 +88,7 @@ namespace Onboarding.Controllers
         // POST: api/Customers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Customer>> PostCustomer(Customer customer)
+        public async Task<ActionResult<CustomerDto>> PostCustomer(Customer customer)
         {
             if (_context.Customers == null)
             {
@@ -97,6 +102,7 @@ namespace Onboarding.Controllers
 
                 return CreatedAtAction("GetCustomer", new { id = customer.Id }, customer);
             }
+
             _context.Entry(customer).State = EntityState.Modified;
 
             try
