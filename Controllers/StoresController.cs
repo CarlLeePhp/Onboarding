@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Onboarding.Models;
 
@@ -13,9 +8,9 @@ namespace Onboarding.Controllers
     [ApiController]
     public class StoresController : ControllerBase
     {
-        private readonly OnboardingContext _context;
+        private readonly OnBoardingContext _context;
 
-        public StoresController(OnboardingContext context)
+        public StoresController(OnBoardingContext context)
         {
             _context = context;
         }
@@ -85,14 +80,36 @@ namespace Onboarding.Controllers
         [HttpPost]
         public async Task<ActionResult<Store>> PostStore(Store store)
         {
-          if (_context.Stores == null)
-          {
-              return Problem("Entity set 'OnboardingContext.Stores'  is null.");
-          }
-            _context.Stores.Add(store);
-            await _context.SaveChangesAsync();
+            if (_context.Stores == null)
+            {
+                return Problem("Entity set 'OnBoardingContext.Stores'  is null.");
+            }
+            if(store.Id == 0)
+            {
+                _context.Stores.Add(store);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetStore", new { id = store.Id }, store);
+                return CreatedAtAction("GetStore", new { id = store.Id }, store);
+            }
+            _context.Entry(store).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!StoreExists(store.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
         }
 
         // DELETE: api/Stores/5

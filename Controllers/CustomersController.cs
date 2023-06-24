@@ -13,9 +13,9 @@ namespace Onboarding.Controllers
     [ApiController]
     public class CustomersController : ControllerBase
     {
-        private readonly OnboardingContext _context;
+        private readonly OnBoardingContext _context;
 
-        public CustomersController(OnboardingContext context)
+        public CustomersController(OnBoardingContext context)
         {
             _context = context;
         }
@@ -85,14 +85,37 @@ namespace Onboarding.Controllers
         [HttpPost]
         public async Task<ActionResult<Customer>> PostCustomer(Customer customer)
         {
-          if (_context.Customers == null)
-          {
-              return Problem("Entity set 'OnboardingContext.Customers'  is null.");
-          }
-            _context.Customers.Add(customer);
-            await _context.SaveChangesAsync();
+            if (_context.Customers == null)
+            {
+                return Problem("Entity set 'OnBoardingContext.Customers'  is null.");
+            }
 
-            return CreatedAtAction("GetCustomer", new { id = customer.Id }, customer);
+            if(customer.Id == 0)
+            {
+                _context.Customers.Add(customer);
+                await _context.SaveChangesAsync();
+
+                return CreatedAtAction("GetCustomer", new { id = customer.Id }, customer);
+            }
+            _context.Entry(customer).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CustomerExists(customer.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
         }
 
         // DELETE: api/Customers/5

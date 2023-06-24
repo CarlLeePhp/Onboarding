@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Onboarding.Models
 {
-    public partial class OnboardingContext : DbContext
+    public partial class OnBoardingContext : DbContext
     {
-        public OnboardingContext()
+        public OnBoardingContext()
         {
         }
 
-        public OnboardingContext(DbContextOptions<OnboardingContext> options)
+        public OnBoardingContext(DbContextOptions<OnBoardingContext> options)
             : base(options)
         {
         }
@@ -46,7 +46,7 @@ namespace Onboarding.Models
             {
                 entity.ToTable("Sale");
 
-                entity.Property(e => e.SaleDate).HasColumnType("datetime");
+                entity.Property(e => e.DateSold).HasColumnType("datetime");
 
                 entity.HasOne(d => d.Customer)
                     .WithMany(p => p.Sales)

@@ -13,9 +13,9 @@ namespace Onboarding.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        private readonly OnboardingContext _context;
+        private readonly OnBoardingContext _context;
 
-        public ProductsController(OnboardingContext context)
+        public ProductsController(OnBoardingContext context)
         {
             _context = context;
         }
@@ -85,14 +85,36 @@ namespace Onboarding.Controllers
         [HttpPost]
         public async Task<ActionResult<Product>> PostProduct(Product product)
         {
-          if (_context.Products == null)
-          {
-              return Problem("Entity set 'OnboardingContext.Products'  is null.");
-          }
-            _context.Products.Add(product);
-            await _context.SaveChangesAsync();
+            if (_context.Products == null)
+            {
+                return Problem("Entity set 'OnBoardingContext.Products'  is null.");
+            }
+            if(product.Id == 0)
+            {
+                _context.Products.Add(product);
+                await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetProduct", new { id = product.Id }, product);
+                return CreatedAtAction("GetProduct", new { id = product.Id }, product);
+            }
+            _context.Entry(product).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ProductExists(product.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
         }
 
         // DELETE: api/Products/5

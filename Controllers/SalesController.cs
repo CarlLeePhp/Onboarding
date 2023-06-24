@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Onboarding.Models;
 
@@ -13,9 +8,9 @@ namespace Onboarding.Controllers
     [ApiController]
     public class SalesController : ControllerBase
     {
-        private readonly OnboardingContext _context;
+        private readonly OnBoardingContext _context;
 
-        public SalesController(OnboardingContext context)
+        public SalesController(OnBoardingContext context)
         {
             _context = context;
         }
@@ -87,7 +82,7 @@ namespace Onboarding.Controllers
         {
           if (_context.Sales == null)
           {
-              return Problem("Entity set 'OnboardingContext.Sales'  is null.");
+              return Problem("Entity set 'OnBoardingContext.Sales'  is null.");
           }
             _context.Sales.Add(sale);
             await _context.SaveChangesAsync();
