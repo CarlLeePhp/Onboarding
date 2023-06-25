@@ -95,38 +95,13 @@ namespace Onboarding.Controllers
                 return Problem("Entity set 'OnBoardingContext.Customers'  is null.");
             }
 
-            if(customer.Id == 0)
-            {
-                _context.Customers.Add(customer);
-                await _context.SaveChangesAsync();
+            
+            _context.Customers.Add(customer);
+            await _context.SaveChangesAsync();
 
-                return CreatedAtAction("GetCustomer", new { id = customer.Id }, customer);
-            }
-
-            _context.Entry(customer).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CustomerExists(customer.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return new CustomerDto
-            {
-                Id = customer.Id,
-                Name = customer.Name,
-                Address = customer.Address
-            };
+            // return Ok(customer);
+            return CreatedAtAction("GetCustomer", new { id = customer.Id }, customer);
+            
         }
 
         // DELETE: api/Customers/5

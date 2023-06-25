@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { Button, Icon, Table, Modal, Input } from 'semantic-ui-react';
+import { Button, Icon, Table, Modal, Input, Grid } from 'semantic-ui-react';
 
 function CustomerList() {
     const [customers, setCustomers] = useState([]);
@@ -40,8 +40,7 @@ function CustomerList() {
         setOpenForm(true)
     }
 
-    const postCustomer = async () => {
-        console.log(currentCustomer)
+    const createCustomer = async () => {
         fetch('api/customers', {
             method: 'POST',
             headers: {
@@ -49,56 +48,82 @@ function CustomerList() {
             },
             body: JSON.stringify(currentCustomer)
         })
-            .then(response => response.json())
+            .then(response => {
+                if (response.ok) {
+                   return response.json();
+                }
+                throw response;
+            })
             .then(data => {
-                let isNew = true;
-                let updatedCustomers = customers.map(c => {
-                    if (c.id === data.id) {
-                        isNew = false;
-                        return data
-                    } else {
-                        return c
-                    }
-                });
-                if (isNew) {
-                    setCustomers(...customers, data)
-                } else {
+                setCustomers([...customers, data]);
+            })
+            .catch(error => {
+                console.error(error)
+            })
+            .finally(() => {
+                setOpenForm(false)
+            })
+    }
+
+    const updateCustomer = async () => {
+        fetch('api/customers/' + currentCustomer.id, {
+            method: 'PUT',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(currentCustomer)
+        })
+            .then(response => {
+                if (response.ok) {
+                    let updatedCustomers = customers.map(c => {
+                        if (c.id === currentCustomer.id) {
+                            return currentCustomer;
+                        } else {
+                            return c;
+                        }
+                    })
                     setCustomers(updatedCustomers)
+                } else {
+                    throw response;
                 }
             })
-            .catch(e => {
-                console.log(e)
+            .catch(error => {
+                console.error(error)
             })
-        
-        
-        setOpenForm(false)
+            .finally(() => {
+                setOpenForm(false)
+            })
     }
 
     return (
         <Fragment>
             <Button color='blue' onClick={newCustomer}>New Customer</Button>
-            <Modal
-                size='small'
-                onClose={() => setOpenForm(false)}
-                onOpen={() => setOpenForm(true)}
-                open={openForm}
-            >
-                <Modal.Header>Create Customer</Modal.Header>
-                <Modal.Content>
-                    <p>NAME:</p>
-                    <Input name='name' onChange={onChange} value={currentCustomer.name} />
-                    <p>ADDRESS:</p>
-                    <Input name='address' onChange={onChange} value={currentCustomer.address} />
-                </Modal.Content>
-                <Modal.Actions>
-                    <Button color='black' onClick={() => setOpenForm(false)}>
-                        Cancel
-                    </Button>
-                    <Button color='green' onClick={postCustomer}>
-                        {currentCustomer.id == 0 ? 'Create' : 'Update' }
-                    </Button>
-                </Modal.Actions>
-            </Modal>
+            
+                <Modal
+                    
+                    onClose={() => setOpenForm(false)}
+                    onOpen={() => setOpenForm(true)}
+                    open={openForm}
+                >
+                    <Modal.Header>Create Customer</Modal.Header>
+                    <Modal.Content>
+                        <Modal.Description>
+                            <p>NAME:</p>
+                            <Input name='name' onChange={onChange} value={currentCustomer.name} />
+                            <p>ADDRESS:</p>
+                            <Input name='address' onChange={onChange} value={currentCustomer.address} />
+                        </Modal.Description>
+                    </Modal.Content>
+                    <Modal.Actions>
+                        <Button color='black' onClick={() => setOpenForm(false)}>
+                            Cancel
+                        </Button>
+                        <Button color='green' onClick={currentCustomer.id === 0 ? createCustomer : updateCustomer}>
+                            {currentCustomer.id === 0 ? 'Create' : 'Update'}
+                        </Button>
+                    </Modal.Actions>
+                </Modal>
+            
             <Table striped>
                 <Table.Header>
                     <Table.Row>
