@@ -121,7 +121,12 @@ namespace Onboarding.Controllers
                 }
             }
 
-            return NoContent();
+            return new CustomerDto
+            {
+                Id = customer.Id,
+                Name = customer.Name,
+                Address = customer.Address
+            };
         }
 
         // DELETE: api/Customers/5

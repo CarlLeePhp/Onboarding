@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { Container } from 'reactstrap';
+// import { Container } from 'reactstrap';
 import { NavMenu } from './NavMenu';
+import { Container } from 'semantic-ui-react';
 
 export class Layout extends Component {
   static displayName = Layout.name;
