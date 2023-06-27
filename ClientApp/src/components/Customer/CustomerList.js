@@ -1,8 +1,12 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { Button, Icon, Table, Modal, Input, Grid } from 'semantic-ui-react';
+import { Button, Icon, Table, Modal, Input, Pagination } from 'semantic-ui-react';
 
 function CustomerList() {
+    const pageSize = 10;
     const [customers, setCustomers] = useState([]);
+    const [displayCustomers, setDisplayCustomers] = useState([]);
+    const [activePage, setActivePage] = useState(1);
+    const [totalPage, setTotalPage] = useState(0);
     const [currentCustomer, setCurrentCustomer] = useState({
         id: 0,
         name: '',
@@ -19,6 +23,21 @@ function CustomerList() {
         const data = await response.json();
         
         setCustomers(data);
+        setTotalPage(Math.ceil(customers.length / pageSize));
+        resetTable();
+    }
+
+    const resetTable = () => {
+        let firstIndex = (activePage - 1) * pageSize;
+        let lastIndex = activePage * pageSize - 1;
+        if (lastIndex > (customers.length - 1)) lastIndex = (customers.length - 1);
+        let sliceData = customers.slice(firstIndex, lastIndex);
+        setDisplayCustomers(sliceData)
+    }
+
+    const handlePageChange = (e, { changedPage }) => {
+        setActivePage(changedPage);
+        resetTable();
     }
 
     const onChange = (e) => {
@@ -30,7 +49,7 @@ function CustomerList() {
             id: 0,
             name: '',
             address: ''
-        })
+        });
         setOpenForm(true);
     }
 
@@ -61,7 +80,12 @@ function CustomerList() {
                 console.error(error)
             })
             .finally(() => {
-                setOpenForm(false)
+                setOpenForm(false);
+                setCurrentCustomer({
+                    id: 0,
+                    name: '',
+                    address: ''
+                });
             })
     }
 
@@ -91,7 +115,29 @@ function CustomerList() {
                 console.error(error)
             })
             .finally(() => {
-                setOpenForm(false)
+                setOpenForm(false);
+                setCurrentCustomer({
+                    id: 0,
+                    name: '',
+                    address: ''
+                });
+            })
+    }
+
+    const deleteCustomer = async (id) => {
+        fetch('api/customers/' + id, {
+            method: 'DELETE'
+        })
+            .then(response => {
+                if (response.ok) {
+                    let updatedCustomers = customers.filter(c => c.id !== id);
+                    console.log(updatedCustomers)
+                    setCustomers(updatedCustomers)
+                }
+                throw response;
+            })
+            .catch(error => {
+                console.error(error)
             })
     }
 
@@ -134,7 +180,7 @@ function CustomerList() {
                 </Table.Header>
 
                 <Table.Body>
-                    {customers.map(customer =>
+                    {displayCustomers.map(customer =>
                         <Table.Row key={customer.id}>
                             <Table.Cell>{customer.name}</Table.Cell>
                             <Table.Cell>{customer.address}</Table.Cell>
@@ -143,7 +189,7 @@ function CustomerList() {
                                     <Icon name='edit' />
                                     EDIT
                                 </Button>
-                                <Button color='red'>
+                                <Button color='red' onClick={() => deleteCustomer(customer.id)}>
                                     <Icon name='trash' />
                                     DELETE
                                 </Button>
@@ -152,7 +198,11 @@ function CustomerList() {
                     )}
                 </Table.Body>
             </Table>
-            
+            <Pagination
+                activePage={activePage}
+                onPageChange={handlePageChange}
+                totalPages={totalPage}
+            />
             
         </Fragment>
     );
