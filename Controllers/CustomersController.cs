@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Onboarding.Dto;
 using Onboarding.Models;
+using Onboarding.RequestHelpers;
 
 namespace Onboarding.Controllers
 {
@@ -23,13 +24,24 @@ namespace Onboarding.Controllers
 
         // GET: api/Customers
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Customer>>> GetCustomers()
+        public async Task<ActionResult<PagedList<Customer>>> GetCustomers([FromQuery] int pageNum)
         {
-          if (_context.Customers == null)
-          {
-              return NotFound();
-          }
-            return await _context.Customers.ToListAsync();
+            int pageSize = 10;
+            if (_context.Customers == null)
+            {
+                return NotFound();
+            }
+
+            var query = _context.Customers.AsQueryable();
+            int counts = await query.CountAsync();
+            int totalPages = (int)Math.Ceiling(counts/(double)pageSize);
+            var items = await query
+                .OrderBy(c => c.Id)
+                .Skip((pageNum - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            Response.Headers.Add("TotalPages", totalPages.ToString());
+            return new PagedList<Customer>(items, totalPages);
         }
 
         // GET: api/Customers/5

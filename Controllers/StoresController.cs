@@ -17,13 +17,23 @@ namespace Onboarding.Controllers
 
         // GET: api/Stores
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Store>>> GetStores()
+        public async Task<ActionResult<IEnumerable<Store>>> GetStores([FromQuery] int pageNum)
         {
+            int pageSize = 10;
           if (_context.Stores == null)
           {
               return NotFound();
           }
-            return await _context.Stores.ToListAsync();
+            var query = _context.Stores.AsQueryable();
+            int counts = await query.CountAsync();
+            int totalPages = (int)Math.Ceiling(counts / (double)pageSize);
+            var items = await query
+                .OrderBy(s => s.Id)
+                .Skip((pageNum - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            Response.Headers.Add("TotalPages", totalPages.ToString());
+            return items;
         }
 
         // GET: api/Stores/5
@@ -84,32 +94,12 @@ namespace Onboarding.Controllers
             {
                 return Problem("Entity set 'OnBoardingContext.Stores'  is null.");
             }
-            if(store.Id == 0)
-            {
-                _context.Stores.Add(store);
-                await _context.SaveChangesAsync();
+            
+            _context.Stores.Add(store);
+            await _context.SaveChangesAsync();
 
-                return CreatedAtAction("GetStore", new { id = store.Id }, store);
-            }
-            _context.Entry(store).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!StoreExists(store.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return CreatedAtAction("GetStore", new { id = store.Id }, store);
+            
         }
 
         // DELETE: api/Stores/5

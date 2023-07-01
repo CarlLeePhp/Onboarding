@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing.Printing;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -22,13 +23,23 @@ namespace Onboarding.Controllers
 
         // GET: api/Products
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<ActionResult<IEnumerable<Product>>> GetProducts([FromQuery] int pageNum)
         {
+            int pageSize = 10;
           if (_context.Products == null)
           {
               return NotFound();
           }
-            return await _context.Products.ToListAsync();
+            var query = _context.Products.AsQueryable();
+            int counts = await query.CountAsync();
+            int totalPages = (int)Math.Ceiling(counts / (double)pageSize);
+            var items = await query
+                .OrderBy(p => p.Id)
+                .Skip((pageNum - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            Response.Headers.Add("TotalPages", totalPages.ToString());
+            return items;
         }
 
         // GET: api/Products/5
@@ -89,32 +100,13 @@ namespace Onboarding.Controllers
             {
                 return Problem("Entity set 'OnBoardingContext.Products'  is null.");
             }
-            if(product.Id == 0)
-            {
-                _context.Products.Add(product);
-                await _context.SaveChangesAsync();
+           
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync();
 
-                return CreatedAtAction("GetProduct", new { id = product.Id }, product);
-            }
-            _context.Entry(product).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ProductExists(product.Id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return CreatedAtAction("GetProduct", new { id = product.Id }, product);
+            
+            
         }
 
         // DELETE: api/Products/5

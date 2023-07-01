@@ -37,6 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="ClientApp\src\components\Product\" />
     <Folder Include="Models\" />
   </ItemGroup>
 
