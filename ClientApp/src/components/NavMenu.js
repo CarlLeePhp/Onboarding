@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Collapse, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import './NavMenu.css';
+import { Menu } from 'semantic-ui-react'
 
 export class NavMenu extends Component {
   static displayName = NavMenu.name;
@@ -24,26 +25,20 @@ export class NavMenu extends Component {
   render() {
     return (
       <header>
-        <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" container light>
-          <NavbarBrand tag={Link} to="/">Onboarding</NavbarBrand>
-          <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
-          <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!this.state.collapsed} navbar>
-                    <ul className="navbar-nav flex-grow">
-                        <NavItem>
-                            <NavLink tag={Link} className="text-dark" to="/store">Store</NavLink>
-                        </NavItem>
-                        <NavItem>
-                            <NavLink tag={Link} className="text-dark" to="/customer">Customer</NavLink>
-                        </NavItem>
-                        <NavItem>
-                            <NavLink tag={Link} className="text-dark" to="/product">Product</NavLink>
-                        </NavItem>
-                        <NavItem>
-                            <NavLink tag={Link} className="text-dark" to="/sale">Sale</NavLink>
-                        </NavItem>
-            </ul>
-          </Collapse>
-        </Navbar>
+            <Menu size='massive'>
+                <Menu.Item>
+                    <Link to='/'><strong>Onboarding</strong></Link>
+                </Menu.Item>
+                <Menu.Item>
+                    <Link to='/product'>Product</Link>
+                </Menu.Item>
+                <Menu.Item>
+                    <Link to='/customer'>Customer</Link>
+                </Menu.Item>
+                <Menu.Item>
+                    <Link to='/store'>Store</Link>
+                </Menu.Item>
+            </Menu>
       </header>
     );
   }

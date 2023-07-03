@@ -1,15 +1,15 @@
 ﻿import React, { useState, useEffect, Fragment } from 'react';
-import { Button, Icon, Table, Modal, Input, Pagination } from 'semantic-ui-react';
+import { Button, Icon, Table, Modal, Input, Pagination, Form } from 'semantic-ui-react';
 
-function StoreList() {
+function ProductList() {
 
     const [pageNum, setPageNum] = useState(1);
-    const [stores, setStores] = useState([]);
+    const [products, setProducts] = useState([]);
     const [totalPage, setTotalPage] = useState(1);
-    const [currentStore, setCurrentStore] = useState({
+    const [currentProduct, setCurrentProduct] = useState({
         id: 0,
         name: '',
-        address: ''
+        price: 0.0
     });
     const [openForm, setOpenForm] = useState(false);
 
@@ -19,11 +19,11 @@ function StoreList() {
 
     const loadData = async (activePage) => {
         setPageNum(activePage);
-        const response = await fetch('api/stores?pageNum=' + activePage);
+        const response = await fetch('api/products?pageNum=' + activePage);
         const data = await response.json();
         let pages = response.headers.get('TotalPages');
         setTotalPage(Number(pages));
-        setStores(data);
+        setProducts(data);
 
     }
 
@@ -34,31 +34,31 @@ function StoreList() {
     }
 
     const onChange = (e) => {
-        setCurrentStore({ ...currentStore, [e.target.name]: e.target.value });
+        setCurrentProduct({ ...currentProduct, [e.target.name]: e.target.value });
     }
 
-    const newStore = () => {
-        setCurrentStore({
+    const newProduct = () => {
+        setCurrentProduct({
             id: 0,
             name: '',
-            address: ''
+            price: 0.0
         });
         setOpenForm(true);
     }
 
-    const editStore = (id) => {
-        let targetStore = stores.filter(s => s.id === id);
-        setCurrentStore(targetStore[0])
+    const editProduct = (id) => {
+        let targetProduct = products.filter(p => p.id === id);
+        setCurrentProduct(targetProduct[0])
         setOpenForm(true)
     }
 
-    const createStore = async () => {
-        fetch('api/stores', {
+    const createProduct = async () => {
+        fetch('api/products', {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(currentStore)
+            body: JSON.stringify(currentProduct)
         })
             .then(response => {
                 if (response.ok) {
@@ -66,28 +66,28 @@ function StoreList() {
                 } else {
                     throw response;
                 }
-                
+
             })
             .catch(error => {
                 console.error(error)
             })
             .finally(() => {
                 setOpenForm(false);
-                setCurrentStore({
+                setCurrentProduct({
                     id: 0,
                     name: '',
-                    address: ''
+                    price: 0.0
                 });
             })
     }
 
-    const updateStore = async () => {
-        fetch('api/stores/' + currentStore.id, {
+    const updateProduct = async () => {
+        fetch('api/products/' + currentProduct.id, {
             method: 'PUT',
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify(currentStore)
+            body: JSON.stringify(currentProduct)
         })
             .then(response => {
                 if (response.ok) {
@@ -101,16 +101,16 @@ function StoreList() {
             })
             .finally(() => {
                 setOpenForm(false);
-                setCurrentStore({
+                setCurrentProduct({
                     id: 0,
                     name: '',
-                    address: ''
+                    price: 0.0
                 });
             })
     }
 
-    const deleteStore = async (id) => {
-        fetch('api/stores/' + id, {
+    const deleteProduct = async (id) => {
+        fetch('api/products/' + id, {
             method: 'DELETE'
         })
             .then(response => {
@@ -119,7 +119,7 @@ function StoreList() {
                 } else {
                     throw response;
                 }
-                
+
             })
             .catch(error => {
                 console.error(error)
@@ -128,7 +128,7 @@ function StoreList() {
 
     return (
         <Fragment>
-            <Button color='blue' onClick={newStore}>New Store</Button>
+            <Button color='blue' onClick={newProduct}>New Product</Button>
 
             <Modal
 
@@ -137,21 +137,29 @@ function StoreList() {
                 open={openForm}
                 style={{ "position": "relative", "display": "block", height: "auto", justifyContent: "center", alignItems: "center" }}
             >
-                <Modal.Header>{currentStore.id === 0 ? 'Create' : 'Update'} Store</Modal.Header>
+                <Modal.Header>{currentProduct.id === 0 ? 'Create' : 'Update'} Product</Modal.Header>
                 <Modal.Content>
                     <Modal.Description>
-                        <p>NAME:</p>
-                        <Input name='name' onChange={onChange} value={currentStore.name} />
-                        <p>ADDRESS:</p>
-                        <Input name='address' onChange={onChange} value={currentStore.address} />
+                        <Form>
+                            <Form.Field>
+                                <label>NAME:</label>
+                                <input name='name' onChange={onChange} value={currentProduct.name} />
+                            </Form.Field>
+                            <Form.Field>
+                                <label>PRICE:</label>
+                                <input type='number' name='price' onChange={onChange} value={currentProduct.price} />
+                            </Form.Field>
+                        </Form>
+                        
+                        
                     </Modal.Description>
                 </Modal.Content>
                 <Modal.Actions>
                     <Button color='black' onClick={() => setOpenForm(false)}>
                         Cancel
                     </Button>
-                    <Button color='green' onClick={currentStore.id === 0 ? createStore : updateStore}>
-                        {currentStore.id === 0 ? 'Create' : 'Update'}
+                    <Button color='green' onClick={currentProduct.id === 0 ? createProduct : updateProduct}>
+                        {currentProduct.id === 0 ? 'Create' : 'Update'}
                     </Button>
                 </Modal.Actions>
             </Modal>
@@ -160,22 +168,22 @@ function StoreList() {
                 <Table.Header>
                     <Table.Row>
                         <Table.HeaderCell>Name</Table.HeaderCell>
-                        <Table.HeaderCell>Address</Table.HeaderCell>
+                        <Table.HeaderCell>Price</Table.HeaderCell>
                         <Table.HeaderCell>Actions</Table.HeaderCell>
                     </Table.Row>
                 </Table.Header>
 
                 <Table.Body>
-                    {stores.map(store =>
-                        <Table.Row key={store.id}>
-                            <Table.Cell>{store.name}</Table.Cell>
-                            <Table.Cell>{store.address}</Table.Cell>
+                    {products.map(product =>
+                        <Table.Row key={product.id}>
+                            <Table.Cell>{product.name}</Table.Cell>
+                            <Table.Cell>$ {product.price}</Table.Cell>
                             <Table.Cell>
-                                <Button color='yellow' onClick={() => editStore(store.id)}>
+                                <Button color='yellow' onClick={() => editProduct(product.id)}>
                                     <Icon name='edit' />
                                     EDIT
                                 </Button>
-                                <Button color='red' onClick={() => deleteStore(store.id)}>
+                                <Button color='red' onClick={() => deleteProduct(product.id)}>
                                     <Icon name='trash' />
                                     DELETE
                                 </Button>
@@ -194,4 +202,4 @@ function StoreList() {
     );
 }
 
-export default StoreList;
+export default ProductList;

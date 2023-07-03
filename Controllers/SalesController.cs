@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Onboarding.Models;
+using Onboarding.Dto;
+using Onboarding.Code;
 
 namespace Onboarding.Controllers
 {
@@ -28,20 +30,25 @@ namespace Onboarding.Controllers
 
         // GET: api/Sales/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Sale>> GetSale(int id)
+        public async Task<ActionResult<SaleDto>> GetSale(int id)
         {
           if (_context.Sales == null)
           {
               return NotFound();
           }
-            var sale = await _context.Sales.FindAsync(id);
+            var sale = await _context.Sales
+                .Include(s => s.Product)
+                .Include(s => s.Customer)
+                .Include(s => s.Store)
+                .FirstOrDefaultAsync(s => s.Id == id);
 
             if (sale == null)
             {
                 return NotFound();
             }
 
-            return sale;
+
+            return await Mapper.ToSaleDto(sale);
         }
 
         // PUT: api/Sales/5
@@ -78,7 +85,7 @@ namespace Onboarding.Controllers
         // POST: api/Sales
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Sale>> PostSale(Sale sale)
+        public async Task<ActionResult<SaleDto>> PostSale(Sale sale)
         {
           if (_context.Sales == null)
           {

@@ -3,6 +3,7 @@ import { FetchData } from "./components/FetchData";
 import { Home } from "./components/Home";
 import CustomerList from './components/Customer/CustomerList';
 import StoreList from './components/Store/StoreList';
+import ProductList from './components/Product/ProductList';
 
 const AppRoutes = [
     {
@@ -27,7 +28,7 @@ const AppRoutes = [
     },
     {
         path: '/product',
-        element: <StoreList />
+        element: <ProductList />
     },
     {
         path: '/sale',

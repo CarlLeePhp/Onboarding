@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 // import { Container } from 'reactstrap';
 import { NavMenu } from './NavMenu';
 import { Container } from 'semantic-ui-react';
@@ -8,12 +8,12 @@ export class Layout extends Component {
 
   render() {
     return (
-      <div>
+      <Fragment>
         <NavMenu />
-        <Container>
+            <Container className='mt-2'>
           {this.props.children}
         </Container>
-      </div>
+      </Fragment>
     );
   }
 }

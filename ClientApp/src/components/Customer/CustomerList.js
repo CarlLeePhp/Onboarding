@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { Button, Icon, Table, Modal, Input, Pagination } from 'semantic-ui-react';
+import { Button, Icon, Table, Modal, Pagination, Form } from 'semantic-ui-react';
 
 function CustomerList() {
     
@@ -133,14 +133,21 @@ function CustomerList() {
                     onClose={() => setOpenForm(false)}
                     onOpen={() => setOpenForm(true)}
                     open={openForm}
+                    style={{ "position": "relative", "display": "block", height: "auto", justifyContent: "center", alignItems: "center" }}
                 >
                     <Modal.Header>Create Customer</Modal.Header>
                     <Modal.Content>
-                        <Modal.Description>
-                            <p>NAME:</p>
-                            <Input name='name' onChange={onChange} value={currentCustomer.name} />
-                            <p>ADDRESS:</p>
-                            <Input name='address' onChange={onChange} value={currentCustomer.address} />
+                    <Modal.Description>
+                    <Form>
+                        <Form.Field>
+                            <label>NAME:</label>
+                            <input name='name' onChange={onChange} value={currentCustomer.name} />
+                        </Form.Field>
+                        <Form.Field>
+                            <label>ADDRESS:</label>
+                            <input name='address' onChange={onChange} value={currentCustomer.address} />
+                        </Form.Field>
+                        </Form>        
                         </Modal.Description>
                     </Modal.Content>
                     <Modal.Actions>
