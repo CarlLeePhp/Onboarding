@@ -1,197 +1,211 @@
 ﻿import React, { useState, useEffect, Fragment } from 'react';
-import { Button, Icon, Table, Modal, Input, Pagination } from 'semantic-ui-react';
+import { Button, Icon, Table, Modal, Form, Input, Select, Pagination } from 'semantic-ui-react';
 
 function StoreList() {
+  const pageSizes = [
+    { key: 1, text: '10', value: 10 },
+    { key: 2, text: '15', value: 15 },
+    { key: 3, text: '20', value: 20 },
+  ];
+  const [pageNum, setPageNum] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [stores, setStores] = useState([]);
+  const [totalPage, setTotalPage] = useState(1);
+  const [currentStore, setCurrentStore] = useState({
+    id: 0,
+    name: '',
+    address: ''
+  });
+  const [openForm, setOpenForm] = useState(false);
 
-    const [pageNum, setPageNum] = useState(1);
-    const [stores, setStores] = useState([]);
-    const [totalPage, setTotalPage] = useState(1);
-    const [currentStore, setCurrentStore] = useState({
-        id: 0,
-        name: '',
-        address: ''
+  useEffect(() => {
+    loadData(1);
+  }, [])
+
+  const loadData = async (activePage) => {
+    setPageNum(activePage);
+    const response = await fetch('api/stores?pageNum=' + activePage + '&pageSize=' + pageSize);
+    const data = await response.json();
+    let pages = response.headers.get('TotalPages');
+    setTotalPage(Number(pages));
+    setStores(data);
+
+  }
+
+  const handlePageChange = (e, { activePage }) => {
+
+    loadData(activePage);
+
+  }
+
+  const onChange = (e) => {
+    setCurrentStore({ ...currentStore, [e.target.name]: e.target.value });
+  }
+
+  const newStore = () => {
+    setCurrentStore({
+      id: 0,
+      name: '',
+      address: ''
     });
-    const [openForm, setOpenForm] = useState(false);
+    setOpenForm(true);
+  }
 
-    useEffect(() => {
-        loadData(1);
-    }, [])
+  const editStore = (id) => {
+    let targetStore = stores.filter(s => s.id === id);
+    setCurrentStore(targetStore[0])
+    setOpenForm(true)
+  }
 
-    const loadData = async (activePage) => {
-        setPageNum(activePage);
-        const response = await fetch('api/stores?pageNum=' + activePage);
-        const data = await response.json();
-        let pages = response.headers.get('TotalPages');
-        setTotalPage(Number(pages));
-        setStores(data);
+  const createStore = async () => {
+    fetch('api/stores', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(currentStore)
+    })
+      .then(response => {
+        if (response.ok) {
+          loadData(pageNum)
+        } else {
+          throw response;
+        }
 
-    }
-
-    const handlePageChange = (e, { activePage }) => {
-
-        loadData(activePage);
-
-    }
-
-    const onChange = (e) => {
-        setCurrentStore({ ...currentStore, [e.target.name]: e.target.value });
-    }
-
-    const newStore = () => {
+      })
+      .catch(error => {
+        console.error(error)
+      })
+      .finally(() => {
+        setOpenForm(false);
         setCurrentStore({
-            id: 0,
-            name: '',
-            address: ''
+          id: 0,
+          name: '',
+          address: ''
         });
-        setOpenForm(true);
-    }
+      })
+  }
 
-    const editStore = (id) => {
-        let targetStore = stores.filter(s => s.id === id);
-        setCurrentStore(targetStore[0])
-        setOpenForm(true)
-    }
+  const updateStore = async () => {
+    fetch('api/stores/' + currentStore.id, {
+      method: 'PUT',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(currentStore)
+    })
+      .then(response => {
+        if (response.ok) {
+          loadData(pageNum)
+        } else {
+          throw response;
+        }
+      })
+      .catch(error => {
+        console.error(error)
+      })
+      .finally(() => {
+        setOpenForm(false);
+        setCurrentStore({
+          id: 0,
+          name: '',
+          address: ''
+        });
+      })
+  }
 
-    const createStore = async () => {
-        fetch('api/stores', {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(currentStore)
-        })
-            .then(response => {
-                if (response.ok) {
-                    loadData(pageNum)
-                } else {
-                    throw response;
-                }
-                
-            })
-            .catch(error => {
-                console.error(error)
-            })
-            .finally(() => {
-                setOpenForm(false);
-                setCurrentStore({
-                    id: 0,
-                    name: '',
-                    address: ''
-                });
-            })
-    }
+  const deleteStore = async (id) => {
+    fetch('api/stores/' + id, {
+      method: 'DELETE'
+    })
+      .then(response => {
+        if (response.ok) {
+          loadData(1);
+        } else {
+          throw response;
+        }
 
-    const updateStore = async () => {
-        fetch('api/stores/' + currentStore.id, {
-            method: 'PUT',
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(currentStore)
-        })
-            .then(response => {
-                if (response.ok) {
-                    loadData(pageNum)
-                } else {
-                    throw response;
-                }
-            })
-            .catch(error => {
-                console.error(error)
-            })
-            .finally(() => {
-                setOpenForm(false);
-                setCurrentStore({
-                    id: 0,
-                    name: '',
-                    address: ''
-                });
-            })
-    }
+      })
+      .catch(error => {
+        console.error(error)
+      })
+  }
+  const changePageSize = (e) => {
+    setPageSize(e.target.value)
+  }
+  return (
+    <Fragment>
+      <Button color='blue' onClick={newStore}>New Store</Button>
 
-    const deleteStore = async (id) => {
-        fetch('api/stores/' + id, {
-            method: 'DELETE'
-        })
-            .then(response => {
-                if (response.ok) {
-                    loadData(1);
-                } else {
-                    throw response;
-                }
-                
-            })
-            .catch(error => {
-                console.error(error)
-            })
-    }
+      <Modal
 
-    return (
-        <Fragment>
-            <Button color='blue' onClick={newStore}>New Store</Button>
+        onClose={() => setOpenForm(false)}
+        onOpen={() => setOpenForm(true)}
+        open={openForm}
+        style={{ "position": "relative", "display": "block", height: "auto", justifyContent: "center", alignItems: "center" }}
+      >
+        <Modal.Header>{currentStore.id === 0 ? 'Create' : 'Update'} Store</Modal.Header>
+        <Modal.Content>
+          <Modal.Description>
+            <p>NAME:</p>
+            <Input name='name' onChange={onChange} value={currentStore.name} />
+            <p>ADDRESS:</p>
+            <Input name='address' onChange={onChange} value={currentStore.address} />
+          </Modal.Description>
+        </Modal.Content>
+        <Modal.Actions>
+          <Button color='black' onClick={() => setOpenForm(false)}>
+            Cancel
+          </Button>
+          <Button color='green' onClick={currentStore.id === 0 ? createStore : updateStore}>
+            {currentStore.id === 0 ? 'Create' : 'Update'}
+          </Button>
+        </Modal.Actions>
+      </Modal>
 
-            <Modal
+      <Table striped>
+        <Table.Header>
+          <Table.Row>
+            <Table.HeaderCell>Name</Table.HeaderCell>
+            <Table.HeaderCell>Address</Table.HeaderCell>
+            <Table.HeaderCell>Actions</Table.HeaderCell>
+          </Table.Row>
+        </Table.Header>
 
-                onClose={() => setOpenForm(false)}
-                onOpen={() => setOpenForm(true)}
-                open={openForm}
-                style={{ "position": "relative", "display": "block", height: "auto", justifyContent: "center", alignItems: "center" }}
-            >
-                <Modal.Header>{currentStore.id === 0 ? 'Create' : 'Update'} Store</Modal.Header>
-                <Modal.Content>
-                    <Modal.Description>
-                        <p>NAME:</p>
-                        <Input name='name' onChange={onChange} value={currentStore.name} />
-                        <p>ADDRESS:</p>
-                        <Input name='address' onChange={onChange} value={currentStore.address} />
-                    </Modal.Description>
-                </Modal.Content>
-                <Modal.Actions>
-                    <Button color='black' onClick={() => setOpenForm(false)}>
-                        Cancel
-                    </Button>
-                    <Button color='green' onClick={currentStore.id === 0 ? createStore : updateStore}>
-                        {currentStore.id === 0 ? 'Create' : 'Update'}
-                    </Button>
-                </Modal.Actions>
-            </Modal>
-
-            <Table striped>
-                <Table.Header>
-                    <Table.Row>
-                        <Table.HeaderCell>Name</Table.HeaderCell>
-                        <Table.HeaderCell>Address</Table.HeaderCell>
-                        <Table.HeaderCell>Actions</Table.HeaderCell>
-                    </Table.Row>
-                </Table.Header>
-
-                <Table.Body>
-                    {stores.map(store =>
-                        <Table.Row key={store.id}>
-                            <Table.Cell>{store.name}</Table.Cell>
-                            <Table.Cell>{store.address}</Table.Cell>
-                            <Table.Cell>
-                                <Button color='yellow' onClick={() => editStore(store.id)}>
-                                    <Icon name='edit' />
-                                    EDIT
-                                </Button>
-                                <Button color='red' onClick={() => deleteStore(store.id)}>
-                                    <Icon name='trash' />
-                                    DELETE
-                                </Button>
-                            </Table.Cell>
-                        </Table.Row>
-                    )}
-                </Table.Body>
-            </Table>
-            <Pagination
-                activePage={pageNum}
-                onPageChange={handlePageChange}
-                totalPages={totalPage}
-            />
-
-        </Fragment>
-    );
+        <Table.Body>
+          {stores.map(store =>
+            <Table.Row key={store.id}>
+              <Table.Cell>{store.name}</Table.Cell>
+              <Table.Cell>{store.address}</Table.Cell>
+              <Table.Cell>
+                <Button color='yellow' onClick={() => editStore(store.id)}>
+                  <Icon name='edit' />
+                  EDIT
+                </Button>
+                <Button color='red' onClick={() => deleteStore(store.id)}>
+                  <Icon name='trash' />
+                  DELETE
+                </Button>
+              </Table.Cell>
+            </Table.Row>
+          )}
+        </Table.Body>
+      </Table>
+      <div className='d-flex flex-row justify-content-between'>
+        <Form.Field
+          control={Select}
+          options={pageSizes}
+          value={pageSize}
+          onChange={changePageSize}
+        />
+        <Pagination
+          activePage={pageNum}
+          onPageChange={handlePageChange}
+          totalPages={totalPage}
+        />
+      </div>
+    </Fragment>
+  );
 }
 
 export default StoreList;
