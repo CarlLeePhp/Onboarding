@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Onboarding.Dto;
 using Onboarding.Models;
+using System.Globalization;
 
 namespace Onboarding.Code
 {
@@ -8,11 +9,11 @@ namespace Onboarding.Code
     {
         public static async Task<SaleDto> ToSaleDto(Sale sale)
         {
-            
+            CultureInfo culture = new CultureInfo("en-GB");
             SaleDto saleDto = new SaleDto
             {
                 Id = sale.Id,
-                DateSold = sale.DateSold,
+                DateSold = sale.DateSold?.ToString("D"),
                 CustomerId = sale.CustomerId,
                 ProductId = sale.ProductId,
                 StoreId = sale.StoreId,

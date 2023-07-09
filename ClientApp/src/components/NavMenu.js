@@ -7,7 +7,7 @@ import { Menu } from 'semantic-ui-react'
 export class NavMenu extends Component {
   static displayName = NavMenu.name;
 
-  constructor (props) {
+  constructor(props) {
     super(props);
 
     this.toggleNavbar = this.toggleNavbar.bind(this);
@@ -16,7 +16,7 @@ export class NavMenu extends Component {
     };
   }
 
-  toggleNavbar () {
+  toggleNavbar() {
     this.setState({
       collapsed: !this.state.collapsed
     });
@@ -25,20 +25,23 @@ export class NavMenu extends Component {
   render() {
     return (
       <header>
-            <Menu size='massive'>
-                <Menu.Item>
-                    <Link to='/'><strong>Onboarding</strong></Link>
-                </Menu.Item>
-                <Menu.Item>
-                    <Link to='/product'>Product</Link>
-                </Menu.Item>
-                <Menu.Item>
-                    <Link to='/customer'>Customer</Link>
-                </Menu.Item>
-                <Menu.Item>
-                    <Link to='/store'>Store</Link>
-                </Menu.Item>
-            </Menu>
+        <Menu size='massive'>
+          <Menu.Item>
+            <Link to='/'><strong>Onboarding</strong></Link>
+          </Menu.Item>
+          <Menu.Item>
+            <Link to='/product'>Product</Link>
+          </Menu.Item>
+          <Menu.Item>
+            <Link to='/customer'>Customer</Link>
+          </Menu.Item>
+          <Menu.Item>
+            <Link to='/store'>Store</Link>
+          </Menu.Item>
+          <Menu.Item>
+            <Link to='/sale'>Sale</Link>
+          </Menu.Item>
+        </Menu>
       </header>
     );
   }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { Button, Icon, Table, Modal, Pagination, Form, Select } from 'semantic-ui-react';
+import { Button, Icon, Table, Modal, Pagination, Form } from 'semantic-ui-react';
 
 function CustomerList() {
   const pageSizes = [

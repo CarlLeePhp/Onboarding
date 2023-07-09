@@ -4,6 +4,7 @@ import { Home } from "./components/Home";
 import CustomerList from './components/Customer/CustomerList';
 import StoreList from './components/Store/StoreList';
 import ProductList from './components/Product/ProductList';
+import SaleList from './components/Sale/SaleList';
 
 const AppRoutes = [
     {
@@ -32,7 +33,7 @@ const AppRoutes = [
     },
     {
         path: '/sale',
-        element: <StoreList />
+        element: <SaleList />
     }
 ];
 
