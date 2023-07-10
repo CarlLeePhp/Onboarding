@@ -19,23 +19,32 @@ namespace Onboarding.Controllers
 
     // GET: api/Sales
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<SaleDto>>> GetSales()
+    public async Task<ActionResult<IEnumerable<SaleDto>>> GetSales([FromQuery] int pageSize, int pageNum = 1)
     {
       if (_context.Sales == null)
       {
         return NotFound();
       }
       List<SaleDto> saleDtos = new List<SaleDto>();
-      var sales = await _context.Sales
+      var query = _context.Sales
         .Include(s => s.Customer)
         .Include(s => s.Product)
         .Include(s => s.Store)
-        .ToListAsync();
+        .AsQueryable();
+      int counts = await query.CountAsync();
+      int totalPages = (int)Math.Ceiling(counts / (double)pageSize);
+      if (pageNum > totalPages) pageNum = totalPages;
+      var sales = await query
+          .OrderBy(s => s.Id)
+          .Skip((pageNum - 1) * pageSize)
+          .Take(pageSize)
+          .ToListAsync();
+      
       sales.ForEach(async sale =>
       {
         saleDtos.Add(await Mapper.ToSaleDto(sale));
       });
-
+      Response.Headers.Add("TotalPages", totalPages.ToString());
       return saleDtos;
     }
 
