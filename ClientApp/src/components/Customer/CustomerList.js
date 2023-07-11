@@ -1,4 +1,6 @@
 import React, { useState, useEffect, Fragment } from 'react';
+import ConfirmDelete from '../ConfirmDelete.js';
+import DeleteError from '../DeleteError.js';
 import { Button, Icon, Table, Modal, Pagination, Form } from 'semantic-ui-react';
 
 function CustomerList() {
@@ -17,6 +19,16 @@ function CustomerList() {
     address: ''
   });
   const [openForm, setOpenForm] = useState(false);
+
+  // Confirm Delete Component
+  const [deleteMessage, setDeleteMessage] = useState('');
+  const [isDelete, setIsDelete] = useState(false);
+
+  // Delete Error Component
+  const [isDeleteError, setIsDeleteError] = useState(false);
+  const setDeleteErrorOpen = (isOpen) => {
+    setIsDeleteError(isOpen);
+  }
 
   useEffect(() => {
     loadData(10, 1);
@@ -42,12 +54,16 @@ function CustomerList() {
     setCurrentCustomer({ ...currentCustomer, [e.target.name]: e.target.value });
   }
 
-  const newCustomer = () => {
+  const initialCurrentCustomer = () => {
     setCurrentCustomer({
       id: 0,
       name: '',
       address: ''
     });
+  }
+
+  const newCustomer = () => {
+    initialCurrentCustomer();
     setOpenForm(true);
   }
 
@@ -77,11 +93,7 @@ function CustomerList() {
       })
       .finally(() => {
         setOpenForm(false);
-        setCurrentCustomer({
-          id: 0,
-          name: '',
-          address: ''
-        });
+        initialCurrentCustomer();
       })
   }
 
@@ -105,16 +117,19 @@ function CustomerList() {
       })
       .finally(() => {
         setOpenForm(false);
-        setCurrentCustomer({
-          id: 0,
-          name: '',
-          address: ''
-        });
+        initialCurrentCustomer();
       })
   }
 
-  const deleteCustomer = async (id) => {
-    fetch('api/customers/' + id, {
+  const confirmDelete = (id) => {
+    let deleteCustomers = customers.filter(c => c.id === id);
+    setCurrentCustomer(deleteCustomers[0]);
+    setDeleteMessage('The customer: ' + deleteCustomers[0].name);
+    setIsDelete(true);
+  }
+
+  const deleteCustomer = async () => {
+    fetch('api/customers/' + currentCustomer.id, {
       method: 'DELETE'
     })
       .then(response => {
@@ -126,7 +141,10 @@ function CustomerList() {
       })
       .catch(error => {
         console.error(error)
+        setDeleteErrorOpen(true);
       })
+    initialCurrentCustomer();
+    setIsDelete(false);
   }
   const changePageSize = (e) => {
     let changedSize = e.target.value
@@ -134,6 +152,12 @@ function CustomerList() {
     setPageSize(changedSize)
     loadData(changedSize, pageNum)
   }
+
+  // Confirm Delete
+  const setDeleteConfirmOpen = (isOpen) => {
+    setIsDelete(isOpen);
+  }
+
   return (
     <Fragment>
       <Button color='blue' onClick={newCustomer}>New Customer</Button>
@@ -170,6 +194,18 @@ function CustomerList() {
         </Modal.Actions>
       </Modal>
 
+      <ConfirmDelete
+        isDelete={isDelete}
+        message={deleteMessage}
+        setDeleteConfirmOpen={setDeleteConfirmOpen}
+        confirmDelete={deleteCustomer}
+      />
+
+      <DeleteError
+        isDeleteError={isDeleteError}
+        setDeleteErrorOpen={setDeleteErrorOpen}
+      />
+
       <Table striped>
         <Table.Header>
           <Table.Row>
@@ -189,7 +225,7 @@ function CustomerList() {
                   <Icon name='edit' />
                   EDIT
                 </Button>
-                <Button color='red' onClick={() => deleteCustomer(customer.id)}>
+                <Button color='red' onClick={() => confirmDelete(customer.id)}>
                   <Icon name='trash' />
                   DELETE
                 </Button>
@@ -209,7 +245,7 @@ function CustomerList() {
             )}
           </Form.Field>
         </Form>
-        
+
         <Pagination
           activePage={pageNum}
           onPageChange={handlePageChange}

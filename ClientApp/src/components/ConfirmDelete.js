@@ -1,6 +1,6 @@
 ﻿import React from 'react';
 
-import { Button, Modal, Icon } from 'semantic-ui-react';
+import { Button, Modal } from 'semantic-ui-react';
 function ConfirmDelete(props) {
 
   return (

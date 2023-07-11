@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { Collapse, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import './NavMenu.css';
 import { Menu } from 'semantic-ui-react'
@@ -29,9 +28,7 @@ export class NavMenu extends Component {
           <Menu.Item>
             <Link to='/'><strong>Onboarding</strong></Link>
           </Menu.Item>
-          <Menu.Item>
-            <Link to='/product'>Product</Link>
-          </Menu.Item>
+
           <Menu.Item>
             <Link to='/customer'>Customer</Link>
           </Menu.Item>
@@ -40,6 +37,9 @@ export class NavMenu extends Component {
           </Menu.Item>
           <Menu.Item>
             <Link to='/sale'>Sale</Link>
+          </Menu.Item>
+          <Menu.Item>
+            <Link to='/product'>Product</Link>
           </Menu.Item>
         </Menu>
       </header>

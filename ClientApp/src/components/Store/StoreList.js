@@ -1,5 +1,7 @@
 ﻿import React, { useState, useEffect, Fragment } from 'react';
-import { Button, Icon, Table, Modal, Form, Input, Select, Pagination } from 'semantic-ui-react';
+import ConfirmDelete from '../ConfirmDelete.js';
+import DeleteError from '../DeleteError.js';
+import { Button, Icon, Table, Modal, Form, Input, Pagination } from 'semantic-ui-react';
 
 function StoreList() {
   const pageSizes = [
@@ -18,13 +20,23 @@ function StoreList() {
   });
   const [openForm, setOpenForm] = useState(false);
 
+  // Confirm Delete Component
+  const [deleteMessage, setDeleteMessage] = useState('');
+  const [isDelete, setIsDelete] = useState(false);
+
+  // Delete Error Component
+  const [isDeleteError, setIsDeleteError] = useState(false);
+  const setDeleteErrorOpen = (isOpen) => {
+    setIsDeleteError(isOpen);
+  }
+
   useEffect(() => {
-    loadData(1);
+    loadData(10, 1);
   }, [])
 
-  const loadData = async (activePage) => {
+  const loadData = async (changedSize, activePage) => {
     setPageNum(activePage);
-    const response = await fetch('api/stores?pageNum=' + activePage + '&pageSize=' + pageSize);
+    const response = await fetch('api/stores?pageNum=' + activePage + '&pageSize=' + changedSize);
     const data = await response.json();
     let pages = response.headers.get('TotalPages');
     setTotalPage(Number(pages));
@@ -34,7 +46,7 @@ function StoreList() {
 
   const handlePageChange = (e, { activePage }) => {
 
-    loadData(activePage);
+    loadData(pageSize, activePage);
 
   }
 
@@ -42,12 +54,15 @@ function StoreList() {
     setCurrentStore({ ...currentStore, [e.target.name]: e.target.value });
   }
 
-  const newStore = () => {
+  const initialCurrentStore = () => {
     setCurrentStore({
       id: 0,
       name: '',
       address: ''
     });
+  }
+  const newStore = () => {
+    initialCurrentStore();
     setOpenForm(true);
   }
 
@@ -67,7 +82,7 @@ function StoreList() {
     })
       .then(response => {
         if (response.ok) {
-          loadData(pageNum)
+          loadData(pageSize, pageNum)
         } else {
           throw response;
         }
@@ -78,11 +93,7 @@ function StoreList() {
       })
       .finally(() => {
         setOpenForm(false);
-        setCurrentStore({
-          id: 0,
-          name: '',
-          address: ''
-        });
+        initialCurrentStore();
       })
   }
 
@@ -96,7 +107,7 @@ function StoreList() {
     })
       .then(response => {
         if (response.ok) {
-          loadData(pageNum)
+          loadData(pageSize, pageNum)
         } else {
           throw response;
         }
@@ -106,33 +117,48 @@ function StoreList() {
       })
       .finally(() => {
         setOpenForm(false);
-        setCurrentStore({
-          id: 0,
-          name: '',
-          address: ''
-        });
+        initialCurrentStore();
       })
   }
 
-  const deleteStore = async (id) => {
-    fetch('api/stores/' + id, {
+  const confirmDelete = (id) => {
+    let deleteStores = stores.filter(c => c.id === id);
+    setCurrentStore(deleteStores[0]);
+    setDeleteMessage('The store: ' + deleteStores[0].name);
+    setIsDelete(true);
+  }
+
+  const deleteStore = async () => {
+    fetch('api/stores/' + currentStore.id, {
       method: 'DELETE'
     })
       .then(response => {
         if (response.ok) {
-          loadData(1);
+          loadData(pageSize, 1);
         } else {
           throw response;
         }
 
       })
       .catch(error => {
-        console.error(error)
+        console.error(error);
+        setDeleteErrorOpen(true);
       })
+    initialCurrentStore();
+    setIsDelete(false);
   }
   const changePageSize = (e) => {
-    setPageSize(e.target.value)
+    let changedSize = e.target.value
+    changedSize = Number(changedSize)
+    setPageSize(changedSize)
+    loadData(changedSize, pageNum)
   }
+
+  // Confirm Delete
+  const setDeleteConfirmOpen = (isOpen) => {
+    setIsDelete(isOpen);
+  }
+
   return (
     <Fragment>
       <Button color='blue' onClick={newStore}>New Store</Button>
@@ -163,6 +189,18 @@ function StoreList() {
         </Modal.Actions>
       </Modal>
 
+      <DeleteError
+        isDeleteError={isDeleteError}
+        setDeleteErrorOpen={setDeleteErrorOpen}
+      />
+
+      <ConfirmDelete
+        isDelete={isDelete}
+        message={deleteMessage}
+        setDeleteConfirmOpen={setDeleteConfirmOpen}
+        confirmDelete={deleteStore}
+      />
+
       <Table striped>
         <Table.Header>
           <Table.Row>
@@ -182,7 +220,7 @@ function StoreList() {
                   <Icon name='edit' />
                   EDIT
                 </Button>
-                <Button color='red' onClick={() => deleteStore(store.id)}>
+                <Button color='red' onClick={() => confirmDelete(store.id)}>
                   <Icon name='trash' />
                   DELETE
                 </Button>
@@ -192,12 +230,17 @@ function StoreList() {
         </Table.Body>
       </Table>
       <div className='d-flex flex-row justify-content-between'>
-        <Form.Field
-          control={Select}
-          options={pageSizes}
-          value={pageSize}
-          onChange={changePageSize}
-        />
+        <Form>
+          <Form.Field
+            control='select'
+            onChange={changePageSize}
+          >
+            {pageSizes.map((sizeOption) =>
+              <option key={sizeOption.id} value={sizeOption.value}>{sizeOption.text}</option>
+            )}
+          </Form.Field>
+        </Form>
+        
         <Pagination
           activePage={pageNum}
           onPageChange={handlePageChange}

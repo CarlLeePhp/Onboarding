@@ -209,7 +209,6 @@ function SaleList() {
 
   return (
     <Fragment>
-      <h4>Sale Page</h4>
       <Button color='blue' onClick={newSale}>New Sale</Button>
       <Modal
         onClose={() => setEditOpen(false)}
